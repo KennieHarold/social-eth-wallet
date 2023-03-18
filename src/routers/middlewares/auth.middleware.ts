@@ -8,6 +8,18 @@ export const isLoggedIn = (
   if (req.isAuthenticated() && req.user) {
     next();
   } else {
-    res.redirect('/login');
+    res.redirect('/');
+  }
+};
+
+export const checkLoggedInThenRedirectProfile = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
+  if (req.isAuthenticated() && req.user) {
+    res.redirect('/profile');
+  } else {
+    next();
   }
 };

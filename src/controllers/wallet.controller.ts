@@ -3,6 +3,8 @@ import Wallet from '@/models/wallet.model';
 import { encrypt } from '@/utils/crypto';
 import { createEthWallet } from '@/utils/wallet';
 import { reportError } from '@/utils/logger';
+import { HydratedDocument } from 'mongoose';
+import { IUser } from '@/models/user.model';
 
 export const createWallet = async (
   req: express.Request,
@@ -12,11 +14,11 @@ export const createWallet = async (
     const password = req.body?.password;
 
     if (!password) {
-      return res.send(400).json({ error: 'Password is required' });
+      return res.status(400).send({ error: 'Password is required' });
     }
 
     if (password.length < 8) {
-      return res.send(400).json({
+      return res.status(400).send({
         error: 'Password should be greater than or equal to 8 characters',
       });
     }
@@ -24,13 +26,13 @@ export const createWallet = async (
     const wallet = createEthWallet();
 
     if (!wallet) {
-      return res.send(500).json({
+      return res.status(500).send({
         error: 'Error creating wallet',
       });
     }
 
     if (!wallet?.mnemonic) {
-      return res.send(500).json({
+      return res.status(500).send({
         error: 'Error creating wallet',
       });
     }
@@ -38,11 +40,13 @@ export const createWallet = async (
     const pubKey = encrypt(wallet.address.toLowerCase(), password);
     const privKey = encrypt(wallet.mnemonic.phrase, password);
 
-    await new Wallet({ pubKey, privKey }).save();
+    const owner = <HydratedDocument<IUser>>req.user;
 
-    return res.send(201).json({ message: 'Wallet created successfully' });
+    await new Wallet({ owner: owner._id, pubKey, privKey }).save();
+
+    return res.status(201).send({ message: 'Wallet created successfully' });
   } catch (error) {
     reportError(error as Error, 'Error creating wallet');
-    return res.send(500).json({ error: 'Internal server error' });
+    return res.status(500).send({ error: 'Internal server error' });
   }
 };

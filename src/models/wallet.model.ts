@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+import mongoose, { Types, Schema } from 'mongoose';
 
 export interface IWallet {
+  owner: Types.ObjectId;
   pubKey: {
     encryptedMessage: string;
     iv: string;
@@ -16,6 +16,11 @@ export interface IWallet {
 }
 
 const WalletSchema = new Schema<IWallet>({
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: 'user',
+    required: true,
+  },
   pubKey: {
     encryptedMessage: {
       type: String,

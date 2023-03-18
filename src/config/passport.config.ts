@@ -9,12 +9,16 @@ import { findOrCreateProfile } from '../utils/passport-helper';
 
 // Used to serialize the user for the session
 passport.serializeUser(function (user, done: DoneCallback) {
-  done(null, user);
+  process.nextTick(function () {
+    done(null, user);
+  });
 });
 
 // Used to deserialize the user
 passport.deserializeUser(function (user: Express.User, done) {
-  return done(null, user);
+  process.nextTick(function () {
+    return done(null, user);
+  });
 });
 
 // Google strategy
@@ -38,7 +42,7 @@ passport.use(
         if (err) {
           return done(err);
         }
-        done(null, user as Express.User);
+        done(null, <Express.User>user);
       });
     },
   ),
